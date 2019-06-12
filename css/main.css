@@ -5,7 +5,10 @@ body{
 .is-link{
   background-color: darkslategrey !important;
 }
-
+.button.is-link:hover{
+  /* background-color: #4F422F !important; */
+  background-color: #63887E !important;
+}
 .has-same-height .card {
   height: 320px;
   overflow: hidden;
