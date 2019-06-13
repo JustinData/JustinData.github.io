@@ -17,6 +17,13 @@ body{
 .card-content h3 {
   text-align: center;
 }
+span.tag.skill{
+  font-weight: 700;
+  font-size: 1rem;
+  margin-right: .5em;
+  margin-bottom: .5em;
+}
+
 
 .table-profile td,
 th {
