@@ -238,7 +238,12 @@ function addBarLabels(){
 	  .attr("class","label")
 	  .attr("x", (function(d) { console.log("xd ", d); return x(d[1]) / 2 }  ))
       .attr("y", (d, i) => {return y(d.data.q) + y.bandwidth() * 1.4 })
-      .text(function(d) { return d.data.val1 + "%" });  
+      .text(function(d) { return d.data.val1 + "%" })
+      .style("opacity", 0)
+      .transition()
+      .delay(1000)
+      .duration(500)
+      .style("opacity", 1);  
       
 
     barLabels2 = barSvg.selectAll("label2")  		
@@ -253,7 +258,12 @@ function addBarLabels(){
             return x( d[1] - diff / 2 ); 
         }  )
         .attr("y", (d, i) => {return y(d.data.q) + y.bandwidth() * 1.4 })
-        .text(function(d) { return d.data.val2 + "%" });
+        .text(function(d) { return d.data.val2 + "%" })
+        .style("opacity", 0)
+        .transition()
+        .delay(1000)
+        .duration(500)
+        .style("opacity", 1);
 
 
 
@@ -264,7 +274,12 @@ function addBarLabels(){
         .attr("class","label")
         .attr("x", (function(d)  { return x(d[1]) + 10 }  ))
         .attr("y", (d, i) => {return y(d.data.q) + y.bandwidth() * .6 })
-        .text(function(d) { return d.data.total + "%"});
+        .text(function(d) { return d.data.total + "%"})
+        .style("opacity", 0)
+        .transition()
+        .delay(1000)
+        .duration(500)
+        .style("opacity", 1);
 }
 
 
