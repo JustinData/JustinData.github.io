@@ -18,8 +18,8 @@ var colors = [
 var donutContainer = d3.select("#donut-chart-container"),
     donutWidth = donutContainer.node().getBoundingClientRect().width,
     donutHeight = donutContainer.node().getBoundingClientRect().height,
-    donutOuterRadius = d3.min([this.donutHeight, this.donutWidth]) / 2 * 0.9,
-    donutInnerRadius = this.donutOuterRadius * 0.7;
+    donutOuterRadius = d3.min([this.donutHeight, this.donutWidth]) / 2 * 0.8,
+    donutInnerRadius = this.donutOuterRadius * 0.65;
 
 var arc = d3.arc()
 	.innerRadius(donutInnerRadius)
@@ -28,7 +28,7 @@ var arc = d3.arc()
 var pie = d3.pie()
     .sort(null)
     // .value(function(d){ return d.value });
-    .value(function(d){ console.log("pie d ", d); return d.value.val });
+    .value(function(d){ return d.value.val });
     
 
 var donutSVG = d3.select("#donut-chart-container")
@@ -128,8 +128,7 @@ function updateDonutChart(newVal){
 
 
 
-var tempBarData = [{"salesperson":"Bob","sales":33},{"salesperson":"Robin","sales":12},{"salesperson":"Anne","sales":41},{"salesperson":"Mark","sales":16},{"salesperson":"Joe","sales":59},{"salesperson":"Eve","sales":38},{"salesperson":"Karen","sales":21},{"salesperson":"Kirsty","sales":25},{"salesperson":"Chris","sales":30},{"salesperson":"Lisa","sales":47},{"salesperson":"Tom","sales":5},{"salesperson":"Stacy","sales":20},{"salesperson":"Charles","sales":13},{"salesperson":"Mary","sales":29}],
-    barData = [
+var barData = [
         {qi: 0, q: "encourage you to be physically active", val1: 53, val2: 38, total: 91},
         {qi: 1, q: "engage in physical activities with you", val1: 31, val2: 51, total: 82},
         {qi: 2, q: "encourage exercise to lose or control weight", val1: 38, val2: 35, total: 73},
@@ -156,7 +155,7 @@ var margin = {top: 20, right: 20, bottom: 30, left: 80},
 // set the ranges
 var y = d3.scaleBand()
           .range([height, 0])
-          .padding(0.3);
+          .padding(0.4);
 
 var x = d3.scaleLinear()
           .range([0, width]);
@@ -224,6 +223,48 @@ function updateBarChart(){
         .delay(750)
         .duration(750)
         .style("opacity", 1);
+
+    addBarLabels();
+}
+
+function addBarLabels(){
+    var labelsData1 = bars.data().slice(0, 4),
+        labelsData2 = bars.data().slice(4);
+
+    barLabels = barSvg.selectAll(".label1")  		
+	  .data(labelsData1)
+	  .enter()
+	  .append("text")
+	  .attr("class","label")
+	  .attr("x", (function(d) { console.log("xd ", d); return x(d[1]) / 2 }  ))
+      .attr("y", (d, i) => {return y(d.data.q) + y.bandwidth() * 1.4 })
+      .text(function(d) { return d.data.val1 + "%" });  
+      
+
+    barLabels2 = barSvg.selectAll("label2")  		
+        .data(labelsData2)
+        .enter()
+        .append("text")
+        .attr("class","label")
+        .attr("x", function(d) { 
+            console.log("xd2 ", d); 
+            var diff = d[1] - d[0];
+
+            return x( d[1] - diff / 2 ); 
+        }  )
+        .attr("y", (d, i) => {return y(d.data.q) + y.bandwidth() * 1.4 })
+        .text(function(d) { return d.data.val2 + "%" });
+
+
+
+    barLabels = barSvg.selectAll(".label3")  		
+        .data(labelsData2)
+        .enter()
+        .append("text")
+        .attr("class","label")
+        .attr("x", (function(d)  { return x(d[1]) + 10 }  ))
+        .attr("y", (d, i) => {return y(d.data.q) + y.bandwidth() * .6 })
+        .text(function(d) { return d.data.total + "%"});
 }
 
 
