@@ -82,10 +82,6 @@ function arcTween(a) {
 //todo - remove data types, implement color scale
 //todo - change starting data to represent all values starting 0
 function drawDonutChart(){
-    var initialData = [
-        {type: "state", val: 0},
-        {type: "empty", val: 100}
-    ];
 
     donutPaths = donutG.selectAll('path')
         .data(pieStartData)
@@ -185,37 +181,56 @@ barData.forEach(function(d) {
 x.domain([0, 100])
 y.domain(barData.map(function(d) { return d.q; }));
 
-barSvg.append("g")
-    .selectAll("g")
-    .data(series)
-    .join("g")
-    .attr("fill", d => color(d.key))
-    .selectAll("rect")
-    .data(d => d)
-    .join("rect")
-    .attr("x", d => x(d[0]))
-    // .attr("y", (d, i) => y(d.data.qi))
-    .attr("y", (d, i) => y(d.data.q))
-    .attr("width", d => x(d[1]) - x(d[0]))
-    .attr("height", y.bandwidth());
+
+function drawBarChart(){
+    bars = barSvg.append("g")
+        .selectAll("g")
+        .data(series)
+        .join("g")
+        .attr("fill", d => color(d.key))
+        .selectAll("rect")
+        .data(d => d)
+        .join("rect")
+        // .attr("x", d => x(d[0]))
+        .attr("x", 0)
+        .attr("y", (d, i) => y(d.data.q))
+        // .attr("width", d => x(d[1]) - x(d[0]))
+        .attr("width", 0)
+        .attr("height", y.bandwidth());
+    
+    
+    // add the y Axis
+    yAxis = barSvg.append("g").attr("class", "y-axis").style("opacity", 0)
+        .call(
+            d3.axisLeft(y)
+              .tickSizeInner(0)
+              .tickSizeOuter(-7)
+        );
+
+    yAxisLabels = yAxis.selectAll("text").style("opacity", 0);
+}
 
 
-// add the y Axis
-barSvg.append("g").attr("class", "y-axis")
-    .call(
-        d3.axisLeft(y)
-          .tickSizeInner(0)
-          .tickSizeOuter(-7)
-    );
+function updateBarChart(){
+    yAxis.transition().duration(500).style("opacity", 1);
 
+    bars.transition()
+        .duration(750)
+        .delay(250)
+        .attr("x",  d => x(d[0]))
+        .attr("width", d => x(d[1]) - x(d[0]));
 
-
+    yAxisLabels.transition()
+        .delay(750)
+        .duration(750)
+        .style("opacity", 1);
+}
 
 
 
 window.addEventListener('load', function () {
     drawDonutChart();
-    // drawBarChart();
+    drawBarChart();
     updateDonutChart();
-    // updateBarChart();
+    updateBarChart();
 })
