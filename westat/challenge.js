@@ -40,10 +40,12 @@ var donutSVG = d3.select("#donut-chart-container")
 var donutG = donutSVG.append("g")
     .attr('transform', 'translate(' + (donutWidth / 2) + ',' + (donutHeight / 2) + ')');
 
+var donutCenterG = donutSVG.append("g")
+	.attr('transform', 'translate(' + (donutWidth / 2) + 
+        ',' + (donutHeight / 2) + ')');
+        
   
-// Create dummy data
-var dummyData = {a: 9, b: 20, c:30, d:8, e:12, f:3, g:7, h:14};
-var dummyStartData = {a: 0, b: 0, c:0, d:0, e:0, f:0, g:0, h:0};
+
 var donutData = [
         {cat: "e", val: 34}, 
         {cat: "vg", val: 38}, 
@@ -86,18 +88,20 @@ function drawDonutChart(){
     ];
 
     donutPaths = donutG.selectAll('path')
-        // .data(pie(initialData))
-        // .data(pieData)
         .data(pieStartData)
         .enter()
         .append('path')
         .attr("d", arc)
         .attr('fill', function(d){ return(color(d.data.key)) })
-        // .attr("stroke", "white")
-        // .style("stroke-width", "2px")
-        // .style("opacity", 0.7)
-        // .attr("class", function(d){ return "arc " + d.data.type })
         .each(function(d){ this._current = d});
+
+    donutCenterG.append("text")
+		.attr("id", "center-text")
+		.attr("dy", ".35em").attr("class", "chartLabel")
+		.attr("dx", "-.25em")
+        .attr("text-anchor", "middle")
+        .style("opacity", 0)
+		.text("Teens' Health");
 
 }
 
@@ -110,7 +114,13 @@ function updateDonutChart(newVal){
 	donutPaths.data(pieData)
 		.transition()
 		.duration(750)
-		.attrTween("d", arcTween);
+        .attrTween("d", arcTween);
+        
+    donutCenterG.select("text")
+        .transition()
+        .duration(750)
+        .delay(300)
+        .style("opacity", 1);
 
 }
 
@@ -124,10 +134,10 @@ function updateDonutChart(newVal){
 
 var tempBarData = [{"salesperson":"Bob","sales":33},{"salesperson":"Robin","sales":12},{"salesperson":"Anne","sales":41},{"salesperson":"Mark","sales":16},{"salesperson":"Joe","sales":59},{"salesperson":"Eve","sales":38},{"salesperson":"Karen","sales":21},{"salesperson":"Kirsty","sales":25},{"salesperson":"Chris","sales":30},{"salesperson":"Lisa","sales":47},{"salesperson":"Tom","sales":5},{"salesperson":"Stacy","sales":20},{"salesperson":"Charles","sales":13},{"salesperson":"Mary","sales":29}],
     barData = [
-        {qi: 0, q: "question 1 text", val1: 53, val2: 38, total: 91},
-        {qi: 1, q: "question 2 text", val1: 31, val2: 51, total: 82},
-        {qi: 2, q: "question 3 text", val1: 38, val2: 35, total: 73},
-        {qi: 3, q: "question 4 text", val1: 36, val2: 41, total: 77}
+        {qi: 0, q: "encourage you to be physically active", val1: 53, val2: 38, total: 91},
+        {qi: 1, q: "engage in physical activities with you", val1: 31, val2: 51, total: 82},
+        {qi: 2, q: "encourage exercise to lose or control weight", val1: 38, val2: 35, total: 73},
+        {qi: 3, q: "talk about eating healthy foods", val1: 36, val2: 41, total: 77}
     ];
 
 var stack = d3.stack()
@@ -141,7 +151,7 @@ var barContainer = d3.select("#bar-chart-container"),
     barContainerHeight = barContainer.node().getBoundingClientRect().height;
 
 // set the dimensions and margins of the graph
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
+var margin = {top: 20, right: 20, bottom: 30, left: 80},
     // width = 960 - margin.left - margin.right,
     width = barContainerWidth - margin.left - margin.right,
     // height = 500 - margin.top - margin.bottom;
@@ -165,57 +175,38 @@ var barSvg = barContainer.append("svg")
     .attr("transform", 
           "translate(" + margin.left + "," + margin.top + ")");
 
-  // format the data
-  tempBarData.forEach(function(d) {
-    d.sales = +d.sales;
-  });
-  barData.forEach(function(d) {
+// format the data
+barData.forEach(function(d) {
     d.val1 = +d.val1;
     d.val2 = +d.val2;
-  });
+});
 
-  // Scale the range of the data in the domains
-//   x.domain([0, d3.max(tempBarData, function(d){ return d.sales; })]);
-  x.domain([0, 100])
-//   y.domain(tempBarData.map(function(d) { return d.salesperson; }));
-  y.domain(barData.map(function(d) { return d.qi; }));
-  //y.domain([0, d3.max(data, function(d) { return d.sales; })]);
+// Scale the range of the data in the domains
+x.domain([0, 100])
+y.domain(barData.map(function(d) { return d.q; }));
 
-//   // append the rectangles for the bar chart
-//   barSvg.selectAll(".bar")
-//     //   .data(tempBarData)
-//       .data(barData)
-//     .enter().append("rect")
-//       .attr("class", "bar")
-//       //.attr("x", function(d) { return x(d.sales); })
-//     //   .attr("width", function(d) {return x(d.sales); } )
-//       .attr("width", function(d) {return x(d.val1); } )
-//     //   .attr("y", function(d) { return y(d.salesperson); })
-//       .attr("y", function(d) { return y(d.q); })
-//       .attr("height", y.bandwidth());
+barSvg.append("g")
+    .selectAll("g")
+    .data(series)
+    .join("g")
+    .attr("fill", d => color(d.key))
+    .selectAll("rect")
+    .data(d => d)
+    .join("rect")
+    .attr("x", d => x(d[0]))
+    // .attr("y", (d, i) => y(d.data.qi))
+    .attr("y", (d, i) => y(d.data.q))
+    .attr("width", d => x(d[1]) - x(d[0]))
+    .attr("height", y.bandwidth());
 
 
-    barSvg.append("g")
-      .selectAll("g")
-      .data(series)
-      .join("g")
-        .attr("fill", d => color(d.key))
-      .selectAll("rect")
-      .data(d => d)
-      .join("rect")
-        .attr("x", d => x(d[0]))
-        .attr("y", (d, i) => y(d.data.qi))
-        .attr("width", d => x(d[1]) - x(d[0]))
-        .attr("height", y.bandwidth());
-
-  // add the x Axis
-//   barSvg.append("g")
-//       .attr("transform", "translate(0," + height + ")")
-//       .call(d3.axisBottom(x));
-
-  // add the y Axis
-  barSvg.append("g")
-      .call(d3.axisLeft(y));
+// add the y Axis
+barSvg.append("g").attr("class", "y-axis")
+    .call(
+        d3.axisLeft(y)
+          .tickSizeInner(0)
+          .tickSizeOuter(-7)
+    );
 
 
 

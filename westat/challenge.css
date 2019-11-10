@@ -1,7 +1,13 @@
 .chart-outter-container{
     height: 500px;
     width: 430px;
+    float: left;
 }
+#bar-container.chart-outter-container{
+    margin-left: 100px;
+}
+
+
 .chart-container{
     height: 80%;
     width: 100%;
@@ -24,4 +30,9 @@ h2.chart-header{
     font-family: 'Open Sans', sans-serif;
     font-weight: bold;
     color: #117CAE;
+}
+
+.y-axis path{
+    stroke: #117CAE;
+    stroke-width: 1px;
 }
