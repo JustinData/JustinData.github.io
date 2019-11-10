@@ -18,8 +18,10 @@ var colors = [
 var donutContainer = d3.select("#donut-chart-container"),
     donutWidth = donutContainer.node().getBoundingClientRect().width,
     donutHeight = donutContainer.node().getBoundingClientRect().height,
-    donutOuterRadius = d3.min([this.donutHeight, this.donutWidth]) / 2 * 0.8,
-    donutInnerRadius = this.donutOuterRadius * 0.65;
+    maxRadius = d3.min([this.donutHeight, this.donutWidth]) / 2,
+    donutOuterRadius = this.maxRadius * 0.8,
+    donutInnerRadius = this.donutOuterRadius * 0.65,
+    donutRadius = this.maxRadius * 0.9;
 
 var arc = d3.arc()
 	.innerRadius(donutInnerRadius)
@@ -27,6 +29,9 @@ var arc = d3.arc()
 
 var pie = d3.pie()
     .sort(null)
+    .startAngle(-90 * Math.PI/180)
+    .endAngle(-90 * Math.PI/180 + 2*Math.PI)
+    // .padAngle(0.01)
     // .value(function(d){ return d.value });
     .value(function(d){ return d.value.val });
     
@@ -44,7 +49,9 @@ var donutCenterG = donutSVG.append("g")
 	.attr('transform', 'translate(' + (donutWidth / 2) + 
         ',' + (donutHeight / 2) + ')');
         
-  
+var donutLabelsG = donutSVG.append("g")
+    .attr('transform', 'translate(' + (donutWidth / 2) + ',' + (donutHeight / 2) + ')');
+    
 
 var donutData = [
         {cat: "e", val: 34}, 
@@ -89,6 +96,7 @@ function drawDonutChart(){
         .append('path')
         .attr("d", arc)
         .attr('fill', function(d){ return(color(d.data.key)) })
+        .attr("id", function(d,i){return "donutArc"+i;})
         .each(function(d){ this._current = d});
 
     donutCenterG.append("text")
@@ -118,11 +126,54 @@ function updateDonutChart(newVal){
         .delay(300)
         .style("opacity", 1);
 
+    addDonutLabels()
 }
 
+var key = function(d){ return d.data.cat; };
 
+function addDonutLabels(){
+    var outerArc = d3.arc()
+        .innerRadius(donutRadius * 0.9)
+        .outerRadius(donutRadius * 0.9);
 
+    var labels = donutLabelsG
+        .selectAll(".donut-label")
+		// .data(pieData);
+		.data(pieData)
+	    .enter()
+		.append("text")
+        .attr("transform", function(d) {  
+            var c = arc.centroid(d);
+            return "translate(" + c[0]*1.37 +"," + c[1]*1.37 + ")";
+         })
+        .attr('text-anchor', "middle")
+        .text(function(d) {
+            return d.value + "%";
+        })
+        .style("opacity", 0)
+        .transition()
+        .delay(750)
+        .duration(500)
+        .style("opacity", 1);
 
+	
+	
+}
+
+function adl(){
+    donutLabelsG.selectAll(".donutText")
+			.data(pieData)
+		   .enter().append("SVG:text")
+			.attr("class", "donutText")
+			//Move the labels below the arcs for those slices with an end angle greater than 90 degrees
+			.attr("dy", function(d,i) { console.log("d.endAngle ", d.endAngle); return (d.endAngle > 90 * Math.PI/180 ? 18 : -11); })
+		   .append("textPath")
+			// .attr("startOffset","50%")
+			.style("text-anchor","middle")
+			.attr("xlink:href",function(d,i){return "#donutArc"+i;})
+			// .text(function(d){return d.data.name;});
+			.text("33");
+}
 
 
 
@@ -236,7 +287,7 @@ function addBarLabels(){
 	  .enter()
 	  .append("text")
 	  .attr("class","label")
-	  .attr("x", (function(d) { console.log("xd ", d); return x(d[1]) / 2 }  ))
+	  .attr("x", (function(d) { return x(d[1]) / 2 }  ))
       .attr("y", (d, i) => {return y(d.data.q) + y.bandwidth() * 1.4 })
       .text(function(d) { return d.data.val1 + "%" })
       .style("opacity", 0)
@@ -252,7 +303,6 @@ function addBarLabels(){
         .append("text")
         .attr("class","label")
         .attr("x", function(d) { 
-            console.log("xd2 ", d); 
             var diff = d[1] - d[0];
 
             return x( d[1] - diff / 2 ); 
