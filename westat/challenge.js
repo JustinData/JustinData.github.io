@@ -102,10 +102,16 @@ function drawDonutChart(){
     donutCenterG.append("text")
 		.attr("id", "center-text")
 		.attr("dy", ".35em").attr("class", "chartLabel")
-		.attr("dx", "-.25em")
+		// .attr("dx", "-.25em")
         .attr("text-anchor", "middle")
         .style("opacity", 0)
-		.text("Teens' Health");
+        .style("fill", "#043464")
+        .style("font-size", "3em")
+        .text("Teens' Health")
+        .call(wrap, 175);
+
+    d3.select(donutCenterG.selectAll("tspan")._groups[0][0]).attr("dy", "-0.1em");
+    d3.select(donutCenterG.selectAll("tspan")._groups[0][1]).attr("dy", "1em");
 
 }
 
@@ -151,6 +157,7 @@ function addDonutLabels(){
             return d.value + "%";
         })
         .style("opacity", 0)
+        .style("fill", "#043464")
         .transition()
         .delay(750)
         .duration(500)
@@ -206,7 +213,7 @@ var margin = {top: 20, right: 20, bottom: 30, left: 80},
 // set the ranges
 var y = d3.scaleBand()
           .range([height, 0])
-          .padding(0.4);
+          .padding(0.5);
 
 var x = d3.scaleLinear()
           .range([0, width]);
@@ -231,6 +238,29 @@ barData.forEach(function(d) {
 x.domain([0, 100])
 y.domain(barData.map(function(d) { return d.q; }));
 
+function wrap(text, width) {
+    text.each(function() {
+      var text = d3.select(this),
+          words = text.text().split(/\s+/).reverse(),
+          word,
+          line = [],
+          lineNumber = 0,
+          lineHeight = 1.1, // ems
+          y = text.attr("y"),
+          dy = parseFloat(text.attr("dy")),
+          tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+      while (word = words.pop()) {
+        line.push(word);
+        tspan.text(line.join(" "));
+        if (tspan.node().getComputedTextLength() > width) {
+          line.pop();
+          tspan.text(line.join(" "));
+          line = [word];
+          tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+        }
+      }
+    });
+}
 
 function drawBarChart(){
     bars = barSvg.append("g")
@@ -256,8 +286,21 @@ function drawBarChart(){
               .tickSizeInner(0)
               .tickSizeOuter(-7)
         );
+    
+    yAxisLabels = yAxis.selectAll("text")
+        .style("opacity", 0)
+        .style("text-anchor", "middle")
+        .style("color", "#043464")
+        .call(wrap, margin.left - 5);
 
-    yAxisLabels = yAxis.selectAll("text").style("opacity", 0);
+    yAxis.selectAll(".tick").each(function(){
+        var tick = d3.select(this);
+            tran = tick.attr("transform").substr(12);
+
+        tick.attr("transform", "translate(" + -((margin.left - 5) / 2) + "," + tran);
+        tick.selectAll("tspan").attr("dy", "1.4em");
+    })
+
 }
 
 
@@ -291,6 +334,7 @@ function addBarLabels(){
       .attr("y", (d, i) => {return y(d.data.q) + y.bandwidth() * 1.4 })
       .text(function(d) { return d.data.val1 + "%" })
       .style("opacity", 0)
+      .style("fill", "#043464")
       .transition()
       .delay(1000)
       .duration(500)
@@ -309,6 +353,7 @@ function addBarLabels(){
         }  )
         .attr("y", (d, i) => {return y(d.data.q) + y.bandwidth() * 1.4 })
         .text(function(d) { return d.data.val2 + "%" })
+        .style("fill", "#043464")
         .style("opacity", 0)
         .transition()
         .delay(1000)
@@ -326,6 +371,7 @@ function addBarLabels(){
         .attr("y", (d, i) => {return y(d.data.q) + y.bandwidth() * .6 })
         .text(function(d) { return d.data.total + "%"})
         .style("opacity", 0)
+        .style("fill", "#043464")
         .transition()
         .delay(1000)
         .duration(500)
